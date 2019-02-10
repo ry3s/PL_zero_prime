@@ -180,3 +180,30 @@ void errorType(char *m) {
     printcToken();
     errorNoCheck();
 }
+
+void errorInsert(KeyId k) {
+    /* keyString(k)をhtmlファイルに挿入 */
+    fprintf(fptex, "<FONT COLOR=%s><b>%s</b></FONT>", INSERT_C, KeyWdT[k].word);
+    errorNoCheck();
+}
+
+void errorMissingId() {
+    /* 「名前がない」とのメッセージをhtmlファイルに挿入 */
+    fprintf(fptex, "<FONT COLOR=%s>Id</FONT>", INSERT_C);
+    errorNoCheck();
+}
+
+void errorMissingOp() {
+    /* 「演算子がない」とのメッセージをhtmlファイルに挿入 */
+    fprintf(fptex, "<FONT COLOR=%s>@</FONT>", INSERT_C);
+    errorNoCheck();
+}
+
+void errorDelete() {
+    /* 今読んだトークンを読み捨てる */
+    int i = (int)cToken.kind;
+    printSpace();
+    printed = 1;
+
+
+}
