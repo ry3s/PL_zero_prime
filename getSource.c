@@ -205,5 +205,153 @@ void errorDelete() {
     printSpace();
     printed = 1;
 
+    if (i < end_of_KeyWd) {
+        /*　予約語　*/
+        fprintf(fptex, "<FONT COLOR=%s><b>%s</b></FONT>", DELETE_C, KeyWdT[i].word);
+    } else if (i < end_of_KeySym) {
+        /*　演算子か区切り記号　*/
+        fprintf(fptex, "<FONT COLOR=%s>%s</FONT>", DELETE_C, KeyWdT[i].word);
+    } else if (i==(int)Id) {
+        /*　Identfier　*/
+        fprintf(fptex, "<FONT COLOR=%s>%s</FONT>", DELETE_C, cToken.u.id);
+    } else if (i==(int)Num) {
+        /*　Num　*/
+        fprintf(fptex, "<FONT COLOR=%s>%d</FONT>", DELETE_C, cToken.u.value);
+    }
+}
+
+void errorMessage(char *m) {
+    /* エラーメッセージをhtmlファイルに出力 */
+    fprintf(fptex, "<FONT COLOR=%s>%s</FONT>", TYPE_C, m);
+    errorNoCheck();
+}
+
+void errorF(char *m) {
+    /* エラーメッセージを出力し，コンパイル終了 */
+    errorMessage(m);
+    fprintf(fptex, "fatal errors\n</PRE>\n</BODY>\n</HTML>\n");
+
+    if (errorNo) {
+        printf("total %d errors\n", errorNo);
+    }
+    printf("abort compilation\n");
+    exit (1);
+}
+
+int errorN() {
+    /* エラーの個数を返す */
+    return errorNo;
+}
+
+char nextChar() {
+    /* 次の一文字を返す関数 */
+    char ch;
+
+    if (lineIndex == -1) {
+        if (fgets(line, MAXLINE, fpi) != NULL) {
+            lineIndex = 0;
+        } else {
+            /* end of file ならコンパイル終了 */
+            errorF("end of file\n")
+        }
+    }
+
+    if ((ch = line[lineIndex++] == '\n')) {
+        /* chに次の一文字 */
+        lineIndex = -1;
+        return '\n';
+    }
+
+    return ch;
+}
+
+Token nextToken() {
+    /* 次のトークンを読んで返す関数 */
+    int i = 0;
+    int num;
+    KeyId cc;
+    Token temp;
+    char indent[MAXLINE];
+    printcToken();              /* 前のトークンを印字 */
+    spaces = 0;
+    CR = 0;
+
+    while (1) {
+        if (ch == ' ') {
+            spaces++;
+        } else if (ch == '\t') {
+            spaces += TAB;
+        } else if (ch == '\n') {
+            spaces = 0;
+            CR++;
+        } else {
+            break;
+        }
+        ch = nextChar();
+    }
+
+    switch(cc == charClassT[ch]) {
+    case letter:
+        do {
+            if (i < MAXNAME) {
+                ident[i] = ch;
+            }
+            i++;
+            ch = nextChar();
+        } while (charClassT[ch] == letter || charClassT[ch] == digit);
+
+        if (i >= MAXNAME) {
+            errorMessage("too long");
+            i = MAXNAME - 1;
+        }
+        ident[i] = '\0';
+
+        for (i = 0; i < end_of_KeyWd; i++) {
+            if (strcmp(ient, KeyWdT[i].word) == 0) {
+                temp.kind = KeyWdT[i].keyId;
+                cToken = temp;
+                printed = 0;
+                return temp;
+            }
+        }
+        temp.kind = Id;
+        strcpy(temp.u.id, ident);
+        break;
+
+    case digit:
+        num = 0;
+        do {
+            num = 10 * num + (ch - '0');
+            i++;
+            ch = nextChar();
+        } while (charClassT[ch] == digit);
+
+        if (i > MAXNUM) {
+            errorMessage("too large");
+        }
+        temp.kind = Num;
+        temp.u.value = num;
+        break;
+
+    case colon:
+        if ((ch = nextChar()) == '=') {
+            ch = nextChar();
+            temp.kind = Assign;
+            break;
+        } else {
+            temp.kind = nul;
+            break;
+        }
+
+    case Lss:
+        if ((ch = nextChar()) == '=') {
+            ch = nextChar();
+            temp.kind = LssEq;
+            break;
+        } else if (ch == '>') {
+            ch = nextChar();
+            temp.kind = NotEq;
+        }
+    }
 
 }
