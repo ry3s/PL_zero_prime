@@ -1,6 +1,7 @@
 /* getSource.c */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "getSource.h"
 
 #define MAXLINE 300             /* 1行の最大文字数 */
@@ -26,7 +27,7 @@ static int printed;             /* トークンは印字済みか */
 static int errorNo = 0;         /* 出力したエラーの数 */
 static char nextChar();         /* 次の文字を読む関数 */
 static int isKeySym(KeyId k);   /* tは記号か */
-static int isKeyWd(keyId k);    /* tは予約語か */
+static int isKeyWd(KeyId k);    /* tは予約語か */
 static void printSpace();       /* トークンの前のスペースの印字 */
 static void printcToken();      /* トークンの印字 */
 
@@ -120,7 +121,7 @@ static void initCharClassT() {
 
 int openSource(char fileName[]) {
     /* ソース・ファイルのopen */
-    char fileName0[30];
+    char fileNameO[30];
 
     if ((fpi = fopen(fileName, "r")) == NULL) {
         printf("can't open %s\n", fileName);
@@ -252,7 +253,7 @@ char nextChar() {
             lineIndex = 0;
         } else {
             /* end of file ならコンパイル終了 */
-            errorF("end of file\n")
+            errorF("end of file\n");
         }
     }
 
@@ -271,7 +272,7 @@ Token nextToken() {
     int num;
     KeyId cc;
     Token temp;
-    char indent[MAXLINE];
+    char ident[MAXLINE];
     printcToken();              /* 前のトークンを印字 */
     spaces = 0;
     CR = 0;
@@ -290,7 +291,7 @@ Token nextToken() {
         ch = nextChar();
     }
 
-    switch(cc == charClassT[ch]) {
+    switch(cc = charClassT[ch]) {
     case letter:
         do {
             if (i < MAXNAME) {
@@ -307,7 +308,7 @@ Token nextToken() {
         ident[i] = '\0';
 
         for (i = 0; i < end_of_KeyWd; i++) {
-            if (strcmp(ient, KeyWdT[i].word) == 0) {
+            if (strcmp(ident, KeyWdT[i].word) == 0) {
                 temp.kind = KeyWdT[i].keyId;
                 cToken = temp;
                 printed = 0;
@@ -351,7 +352,99 @@ Token nextToken() {
         } else if (ch == '>') {
             ch = nextChar();
             temp.kind = NotEq;
+            break;
+        } else {
+            temp.kind = Lss;
+            break;
         }
+    case Gtr:
+        if ((ch = nextChar()) == '=') {
+            ch = nextChar();
+            temp.kind = GtrEq;
+            break;
+        } else {
+            temp.kind = Gtr;
+            break;
+        }
+    default:
+        temp.kind = cc;
+        ch = nextChar();
+        break;
+    }
+    cToken = temp;
+    printed = 0;
+    return temp;
+
+}
+
+Token checkGet(Token t, KeyId k) {
+    /* t.kind == kのチェック */
+    if (t.kind == k) {
+        return nextToken();
     }
 
+    if ((isKeyWd(k) && isKeyWd(t.kind))
+        || (isKeySym(k) && isKeySym(t.kind))) {
+        errorDelete();
+        errorInsert(k);
+        return nextToken();
+    }
+    errorInsert(k);
+    return t;
+}
+
+static void printSpaces() {
+    /* 空白や改行の印字 */
+    while (CR-- > 0) {
+        fprintf(fptex, "\n");
+    }
+    while (spaces-- > 0) {
+        fprintf(fptex, " ");
+    }
+    CR = 0;
+    spaces = 0;
+
+}
+
+void printcToken() {
+    /* 現在のトークンの印字 */
+    int i = (int)cToken.kind;
+
+    if (printed) {
+        printed = 0;
+        return;
+    }
+
+    printed = 1;
+    printSpaces();
+
+    if (i < end_of_KeyWd) {
+        fprintf(fptex, "<b>%s</b>", KeyWdT[i].word);
+    } else if (i < end_of_KeySym) {
+        fprintf(fptex, "%s", KeyWdT[i].word);
+    } else if (i==(int)Id){							/*　Identfier　*/
+        switch (idKind) {
+        case varId:
+            fprintf(fptex, "%s", cToken.u.id);
+            return;
+        case parId:
+            fprintf(fptex, "<i>%s</i>", cToken.u.id);
+            return;
+        case funcId:
+            fprintf(fptex, "<i>%s</i>", cToken.u.id);
+            return;
+        case constId:
+            fprintf(fptex, "<tt>%s</tt>", cToken.u.id);
+            return;
+        }
+    } else if (i==(int)Num) {
+        /*　Num　*/
+        fprintf(fptex, "%d", cToken.u.value);
+    }
+
+}
+
+void setIdKind(KindT k) {
+    /* 現在のトークンの種類をセット */
+    idKind = k;
 }
