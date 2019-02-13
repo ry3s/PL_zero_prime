@@ -67,7 +67,7 @@ void blockEnd() {
     localAddr = addr[level];
 }
 
-int blevel() {
+int bLevel() {
     /*現ブロックのレベルを返す */
     return level;
 }

@@ -19,7 +19,7 @@ static int lineIndex;           /* 次に読む文字の位置 */
 static char ch;                 /* 最後に読んだ文字 */
 
 static Token cToken;            /* 最後に読んだトークン */
-static KindT idKind;            /* 現トークンの種類 */
+static KindT idKind;/* 現トークンの種類 */
 static int spaces;              /* そのトークンの前のスペースの個数 */
 static int CR;                  /* その前のCRの個数 */
 static int printed;             /* トークンは印字済みか */
@@ -28,7 +28,7 @@ static int errorNo = 0;         /* 出力したエラーの数 */
 static char nextChar();         /* 次の文字を読む関数 */
 static int isKeySym(KeyId k);   /* tは記号か */
 static int isKeyWd(KeyId k);    /* tは予約語か */
-static void printSpace();       /* トークンの前のスペースの印字 */
+static void printSpaces();       /* トークンの前のスペースの印字 */
 static void printcToken();      /* トークンの印字 */
 
 struct keyWd {
@@ -176,7 +176,7 @@ void errorNoCheck() {
 
 void errorType(char *m) {
     /* 型エラーをhtmlファイルに出力 */
-    printSpace();
+    printSpaces();
     fprintf(fptex, "<FONT COLOR=%s>%s</FONT>", TYPE_C, m);
     printcToken();
     errorNoCheck();
@@ -203,7 +203,7 @@ void errorMissingOp() {
 void errorDelete() {
     /* 今読んだトークンを読み捨てる */
     int i = (int)cToken.kind;
-    printSpace();
+    printSpaces();
     printed = 1;
 
     if (i < end_of_KeyWd) {
