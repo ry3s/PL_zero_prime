@@ -1,5 +1,5 @@
 CC	= gcc
-CFLAGS	=
+CFLAGS	= -g -O0
 LFLAGS	=
 
 OBJS	= codegen.o \
