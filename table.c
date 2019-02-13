@@ -74,7 +74,7 @@ int blevel() {
 
 int fPars() {
     /* 現ブロックの関数のパラメタ数を返す */
-    return nameTable[index[level - 1].u.f.pars];
+    return nameTable[index[level - 1]].u.f.pars;
 }
 
 void enterT(char *id) {
@@ -84,6 +84,7 @@ void enterT(char *id) {
     } else {
         errorF("too many names");
     }
+    return;
 }
 
 int enterTfunc(char *id, int v) {
